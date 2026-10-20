@@ -1,0 +1,54 @@
+name: Build and push Docker images
+
+on:
+  # se déclenche quand le workflow "Test backend" se termine
+  workflow_run:
+    # nom EXACT du workflow surveillé (le "name" du premier fichier)
+    workflows: ["Test backend"]
+    # "completed" = terminé, qu'il ait réussi ou échoué
+    types:
+      - completed
+    # uniquement quand les tests ont tourné sur main
+    branches:
+      - main
+
+jobs:
+  build-and-push-docker-image:
+    # ne s'exécute que si les tests ont réussi
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-24.04
+
+    steps:
+      # récupère exactement le commit qui vient d'être testé
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      # connexion à Docker Hub
+      - name: Login to DockerHub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+      # construit et publie l'image du backend
+      - name: Build image and push backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./simple-api
+          tags: ${{secrets.DOCKERHUB_USERNAME}}/tp-devops-simple-api:latest
+          push: true
+
+      # construit et publie l'image de la base de données
+      - name: Build image and push database
+        uses: docker/build-push-action@v6
+        with:
+          context: ./database
+          tags: ${{secrets.DOCKERHUB_USERNAME}}/tp-devops-database:latest
+          push: true
+
+      # construit et publie l'image du serveur http
+      - name: Build image and push httpd
+        uses: docker/build-push-action@v6
+        with:
+          context: ./http-server
+          tags: ${{secrets.DOCKERHUB_USERNAME}}/tp-devops-httpd:latest
+          push: true
