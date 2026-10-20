@@ -24,6 +24,10 @@ jobs:
      #finally build your app with the latest command
       - name: Build and test with Maven
         run: mvn clean verify --file ./simple-api/pom.xml
+      
+            # analyse la qualité du code avec SonarCloud
+      - name: SonarCloud analysis
+        run: mvn -B verify sonar:sonar -Dsonar.projectKey=remiLesanne_tp-devops-correction-docker -Dsonar.organization=remilesanne -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }} --file ./simple-api/pom.xml
   
   #2eme job
   build-and-push-docker-image:
