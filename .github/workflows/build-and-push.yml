@@ -3,9 +3,7 @@ name: Build and push Docker images
 on:
   # se déclenche quand le workflow "Test backend" se termine
   workflow_run:
-    # nom EXACT du workflow surveillé (le "name" du premier fichier)
     workflows: ["Test backend"]
-    # "completed" = terminé, qu'il ait réussi ou échoué
     types:
       - completed
     # uniquement quand les tests ont tourné sur main
@@ -51,6 +49,14 @@ jobs:
         with:
           context: ./http-server
           tags: ${{secrets.DOCKERHUB_USERNAME}}/tp-devops-httpd:latest
+          push: true
+
+      # construit et publie l'image du front
+      - name: Build image and push front
+        uses: docker/build-push-action@v6
+        with:
+          context: ./front
+          tags: ${{secrets.DOCKERHUB_USERNAME}}/tp-devops-front:latest
           push: true
 
   deploy:
