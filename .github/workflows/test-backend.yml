@@ -29,4 +29,4 @@ jobs:
 
       # analyse la qualité du code avec SonarCloud
       - name: SonarCloud analysis
-        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=remiLesanne_tp-devops-correction-docker -Dsonar.organization=remilesanne -Dsonar.host.url=https://sonarcloud.io -Dsonar.token=${{ secrets.SONAR_TOKEN }} --file ./simple-api/pom.xml
+        run: mvn -B verify sonar:sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }} --file ./simple-api/pom.xml
