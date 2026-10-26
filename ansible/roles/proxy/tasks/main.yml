@@ -1,0 +1,14 @@
+---
+- name: Run HTTPD proxy
+  community.docker.docker_container:
+    name: httpd
+    image: "{{ dockerhub_user }}/tp-devops-httpd:latest"
+    pull: true
+    state: started
+    restart_policy: always
+    ports:
+      - "80:80"
+    networks:
+      - name: "{{ docker_network }}"
+  vars:
+    ansible_python_interpreter: "{{ docker_python }}"

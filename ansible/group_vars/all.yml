@@ -1,0 +1,6 @@
+# Python du venv créé par le rôle docker (contient le SDK Docker)
+docker_python: /opt/docker_venv/bin/python
+
+dockerhub_user: remi1233
+docker_network: my-network
+db_password: pwd
