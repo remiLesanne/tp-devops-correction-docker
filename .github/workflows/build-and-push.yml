@@ -52,3 +52,32 @@ jobs:
           context: ./http-server
           tags: ${{secrets.DOCKERHUB_USERNAME}}/tp-devops-httpd:latest
           push: true
+
+  deploy:
+    # ne démarre qu'une fois les images publiées sur DockerHub
+    needs: build-and-push-docker-image
+    runs-on: ubuntu-24.04
+
+    steps:
+      # récupère le même commit (et donc le dossier ansible/)
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      # installe Ansible (avec la collection community.docker)
+      - name: Install Ansible
+        run: pipx install --include-deps ansible
+
+      # écrit la clé SSH depuis le secret et enregistre l'empreinte du serveur
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H remi.lesanne.takima.school >> ~/.ssh/known_hosts
+
+      # lance le playbook, en remplaçant le chemin de la clé de l'inventaire
+      - name: Deploy with Ansible
+        working-directory: ./ansible
+        run: ansible-playbook -i inventories/setup.yml playbook.yml -e "ansible_ssh_private_key_file=$HOME/.ssh/id_rsa"
