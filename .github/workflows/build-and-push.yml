@@ -83,7 +83,12 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H remi.lesanne.takima.school >> ~/.ssh/known_hosts
 
-      # lance le playbook, en remplaçant le chemin de la clé de l'inventaire
+      # lance le playbook en déchiffrant le vault avec le secret GitHub
       - name: Deploy with Ansible
         working-directory: ./ansible
-        run: ansible-playbook -i inventories/setup.yml playbook.yml -e "ansible_ssh_private_key_file=$HOME/.ssh/id_rsa"
+        run: |
+          echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > vault_pass.txt
+          ansible-playbook -i inventories/setup.yml playbook.yml \
+            -e "ansible_ssh_private_key_file=$HOME/.ssh/id_rsa" \
+            --vault-password-file vault_pass.txt
+          rm -f vault_pass.txt
